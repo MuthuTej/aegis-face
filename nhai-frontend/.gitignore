@@ -1,0 +1,29 @@
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.env
+.env*.local
+
+# Native
+.kotlin/
+*.hprof
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# TypeScript
+*.tsbuildinfo
+
+# TFLite models are included in the build (required for on-device ML inference)

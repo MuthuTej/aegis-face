@@ -1,0 +1,45 @@
+# Render Blueprint — AEGIS / NHAI Datalake 3.0 backend
+# Spec: https://render.com/docs/blueprint-spec
+#
+# NOTE: the free plan has an ephemeral filesystem and spins down after 15 min
+# of inactivity. The SQLite database (data/datalake.db) and uploaded profile
+# photos (uploads/) are wiped on every spin-up and every deploy. The `admin`
+# user and the `aegis-nhai-001` device re-seed themselves on boot via
+# src/startup.ts, but registered employees, face enrollments and attendance
+# records do not survive.
+#
+# To make data persistent later: change `plan` to `starter`, uncomment the
+# `disk` block below, and set DB_PATH to /var/data/datalake.db.
+
+services:
+  - type: web
+    name: aegis-backend
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    # --include=dev is required: Render installs production dependencies only,
+    # which omits the pinned TypeScript (a devDependency) and makes `tsc`
+    # resolve to whatever version exists in the build image.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Generated once by Render and kept stable across deploys.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      - key: BCRYPT_ROUNDS
+        value: "10"
+      # The free plan wipes the DB on every restart/deploy, so rebuild the
+      # demo employees + attendance history on each boot. Set to false once
+      # this runs on a persistent disk.
+      - key: SEED_DEMO_DATA
+        value: "true"
+    # disk:
+    #   name: aegis-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
